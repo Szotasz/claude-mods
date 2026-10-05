@@ -1,4 +1,4 @@
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 import type { On } from 'claude-code'
 
 const LIMITS = [
@@ -7,6 +7,7 @@ const LIMITS = [
 ]
 
 const PROPS = { hasSurvey: false, isWorking: false } as never
+const HU = { options: { language: 'hu' } }
 
 // A motor helyett: a measure-t visszhangozza, a sávba a saját (üres) rajzát adja.
 function engine(on: On, modelName?: string) {
@@ -18,7 +19,7 @@ function engine(on: On, modelName?: string) {
   })
 }
 
-test('a sáv mutatja mindkét ablakot', async ($, on) => {
+test('a sáv mutatja mindkét ablakot', HU, async ($, on) => {
   engine(on, 'Opus')
   await $.session.measure({ context: {} as never, rateLimits: LIMITS, changed: ['rateLimits'] })
 
@@ -31,7 +32,7 @@ test('a sáv mutatja mindkét ablakot', async ($, on) => {
   }
 })
 
-test('adat nélkül átengedi a motornak (nem előfizetéses fiók)', async ($, on) => {
+test('adat nélkül átengedi a motornak (nem előfizetéses fiók)', HU, async ($, on) => {
   engine(on, 'Opus')
   const ui = await $.ui.mount({ plugin: 'usage-band', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
   expect(await ui.find({ type: 'Text', text: /%/ })).toBeUndefined()
@@ -39,7 +40,7 @@ test('adat nélkül átengedi a motornak (nem előfizetéses fiók)', async ($, 
   await ui.unmount()
 })
 
-test('90% fölött egyszer szól, resetenként', async ($, on) => {
+test('90% fölött egyszer szól, resetenként', HU, async ($, on) => {
   engine(on, 'Opus')
   const toasts: string[] = []
   on('ui.toast', ($, e) => { toasts.push(e.text); return { value: undefined } })
@@ -59,7 +60,7 @@ test('90% fölött egyszer szól, resetenként', async ($, on) => {
   expect(toasts.length).toBe(2)
 })
 
-test('a kontextusablak telítettsége is látszik, limitek nélkül is', async ($, on) => {
+test('a kontextusablak telítettsége is látszik, limitek nélkül is', HU, async ($, on) => {
   engine(on, 'Opus')
   await $.session.measure({
     context: { tokens: 420_000, window: 1_000_000, percent: 42 },
@@ -76,7 +77,7 @@ test('a kontextusablak telítettsége is látszik, limitek nélkül is', async (
   }
 })
 
-test('a modell neve a sáv elején', async ($, on) => {
+test('a modell neve a sáv elején', HU, async ($, on) => {
   engine(on, 'Opus 5.5 (1M context)')
   await $.session.measure({ context: {} as never, rateLimits: [], changed: ['cost'] })
 
@@ -85,4 +86,41 @@ test('a modell neve a sáv elején', async ($, on) => {
     expect(await ui.find({ type: 'Text', text: /^🤖 Opus 5\.5 \(1M context\)$/ })).toBeDefined()
     await ui.unmount()
   }
+})
+
+test('angolul is megy', { options: { language: 'en' } }, async ($, on) => {
+  engine(on, 'Opus')
+  const toasts: string[] = []
+  on('ui.toast', ($, e) => { toasts.push(e.text); return { value: undefined } })
+  await $.session.measure({ context: {} as never, rateLimits: LIMITS, changed: ['rateLimits'] })
+
+  const ui = await $.ui.mount({ plugin: 'usage-band', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(await ui.find({ type: 'Text', text: /^Week $/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^ → (Sun|Mon|Tue|Wed|Thu|Fri|Sat) \d\d:\d\d$/ })).toBeDefined()
+  expect(toasts[0]).toMatch(/^⚠ Week limit: 93%/)
+  await ui.unmount()
+})
+
+test('auto: magyar LANG mellett magyar', async ($, on) => {
+  engine(on, 'Opus')
+  mock.env(on, { LANG: 'hu_HU.UTF-8' })
+  on('session.start', ($, e) => e as never)
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1 }, rateLimits: LIMITS } }))
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true } as never)
+
+  const ui = await $.ui.mount({ plugin: 'usage-band', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(await ui.find({ type: 'Text', text: /^Hét $/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('auto: más LANG mellett angol', async ($, on) => {
+  engine(on, 'Opus')
+  mock.env(on, { LANG: 'en_US.UTF-8' })
+  on('session.start', ($, e) => e as never)
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1 }, rateLimits: LIMITS } }))
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true } as never)
+
+  const ui = await $.ui.mount({ plugin: 'usage-band', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(await ui.find({ type: 'Text', text: /^Week $/ })).toBeDefined()
+  await ui.unmount()
 })

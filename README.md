@@ -28,7 +28,33 @@ Sáv a prompt felett:
 
 Összecsukás: `ctrl+x ctrl+a`.
 
+**Nyelv / Language:** `/config` → `usage-band.language`, vagy a `settings.json`-ban:
+
+```json
+"pluginConfigs": { "usage-band": { "language": "en" } }
+```
+
+- `auto` (alapértelmezett): magyar, ha a rendszer nyelve (`LANG`) magyar, különben angol
+- `hu`: magyar (`Hét`, `Cs 10:00`)
+- `en`: English (`Week`, `Thu 10:00`)
+
 **Követelmény:** Claude Code 2.1.289 körüli verzió. A mod-API early access, kiadásról kiadásra változhat.
+
+## Ötletek
+
+Sáv bővítése (`usage-band`):
+- figyelmeztetés kontextusablakra (pl. 85%), opcionálisan automatikus `/compact`
+- session költsége (`$.session.usage().cost`)
+- fast mód jelzése, git branch, aktuális projekt
+- beállítható küszöb és megjelenő elemek (`userConfig`)
+
+Új mod-ok:
+- **env-guard**: `.env`, kulcsfájlok, `supabase/.temp` szerkesztésének tiltása (`tool.call` → `deny`)
+- **prod-guard**: éles Supabase projekt ID-jára vagy `git push origin main`-re megerősítés kérése
+- **turn-timer**: hosszú turn végén hang/toast, hogy vissza lehet nézni (`turn.complete`, `$.audio.play`)
+- **project-pane**: oldalpanel az aktuális repó Netlify/Vercel deploy állapotával és nyitott PR-jeivel
+- **quote**: `/quote` — a kijelölt szöveget idézetként a promptba teszi (`$.ui.selection`)
+- **hu-prompt**: a rendszerpromptba magyar válasz- és stílusszabály (`prompt.compose`)
 
 ## Fejlesztés
 

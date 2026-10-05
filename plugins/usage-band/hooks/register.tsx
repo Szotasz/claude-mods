@@ -11,7 +11,24 @@ const model = atom({ plugin: 'usage-band', key: 'model' } as const, null)
 
 const WARN_AT = 90
 
-const LABELS: Record<string, string> = { five_hour: '5h', seven_day: 'Hét' }
+type Strings = { labels: Record<string, string>; days: string[]; limit: string }
+
+const STRINGS: Record<'hu' | 'en', Strings> = {
+  hu: {
+    labels: { five_hour: '5h', seven_day: 'Hét' },
+    days: ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'],
+    limit: 'limit',
+  },
+  en: {
+    labels: { five_hour: '5h', seven_day: 'Week' },
+    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    limit: 'limit',
+  },
+}
+
+// A modul minden beállításváltáskor újratöltődik, így elég egyszer, induláskor eldönteni.
+let t: Strings = STRINGS.en
+const LABELS = (): Record<string, string> => t.labels
 const WIDTH = 10
 
 function bar(percent: number): string {
@@ -28,8 +45,7 @@ function resetText(kind: string, resetsAt?: string): string {
   const at = new Date(resetsAt)
   const hhmm = `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
   if (kind === 'five_hour') return ` → ${hhmm}`
-  const days = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo']
-  return ` → ${days[at.getDay()]} ${hhmm}`
+  return ` → ${t.days[at.getDay()]} ${hhmm}`
 }
 
 function tokens(n: number): string {
@@ -51,21 +67,30 @@ async function refreshModel($: EngineInterface): Promise<void> {
 async function warnPast90($: EngineInterface, current: Limit[]): Promise<void> {
   const already = await read($, warned)
   const fresh = current.filter(
-    l => l.kind in LABELS && l.percentUsed >= WARN_AT && !already.includes(`${l.kind}@${l.resetsAt}`),
+    l => l.kind in LABELS() && l.percentUsed >= WARN_AT && !already.includes(`${l.kind}@${l.resetsAt}`),
   )
   if (fresh.length === 0) return
 
   for (const l of fresh) {
     $.ui.toast(
-      `⚠ ${LABELS[l.kind]} limit: ${Math.round(l.percentUsed)}%${resetText(l.kind, l.resetsAt)}`,
+      `⚠ ${LABELS()[l.kind]} ${t.limit}: ${Math.round(l.percentUsed)}%${resetText(l.kind, l.resetsAt)}`,
       { timeoutMs: 10000 },
     )
   }
   await update($, warned, list => [...list, ...fresh.map(l => `${l.kind}@${l.resetsAt}`)])
 }
 
-export const register: Register = on => {
+async function pickLanguage($: EngineInterface, setting: unknown): Promise<Strings> {
+  if (setting === 'hu' || setting === 'en') return STRINGS[setting]
+  const locale = (await $.env.get('LC_ALL')) || (await $.env.get('LANG')) || ''
+  return locale.toLowerCase().startsWith('hu') ? STRINGS.hu : STRINGS.en
+}
+
+export const register: Register = (on, options) => {
+  if (options.language === 'hu' || options.language === 'en') t = STRINGS[options.language]
+
   on('session.start', async ($, e, next) => {
+    t = await pickLanguage($, options.language)
     const result = await next(e)
     const usage = await $.session.usage()
     await update($, limits, () => usage.rateLimits)
@@ -97,7 +122,7 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const shown = (await read($, limits)).filter(l => l.kind in LABELS)
+    const shown = (await read($, limits)).filter(l => l.kind in LABELS())
     const ctx = await read($, context)
     const name = await read($, model)
     if (e.props.hasSurvey || (shown.length === 0 && ctx === null && name === null)) return next(e)
@@ -119,7 +144,7 @@ export const register: Register = on => {
         )}
         {shown.map(l => (
           <Box key={l.kind} flexDirection="row">
-            <Text dimColor>{LABELS[l.kind]} </Text>
+            <Text dimColor>{LABELS()[l.kind]} </Text>
             <Text color={color(l.percentUsed)}>{bar(l.percentUsed)}</Text>
             <Text bold> {Math.round(l.percentUsed)}%</Text>
             <Text dimColor>{resetText(l.kind, l.resetsAt)}</Text>

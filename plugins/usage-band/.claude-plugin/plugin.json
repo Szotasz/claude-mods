@@ -1,10 +1,24 @@
 {
   "name": "usage-band",
-  "version": "0.1.0",
-  "description": "A prompt fölötti sáv: 5 órás és heti használat, reset időponttal.",
+  "version": "0.2.0",
+  "description": "Band above the prompt: model, context window, 5-hour and weekly limits with reset times, warning past 90%. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "Szota Szabolcs",
     "email": "szota.szabolcs@gmail.com"
+  },
+  "userConfig": {
+    "language": {
+      "type": "string",
+      "title": "Language / Nyelv",
+      "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
+      "required": false,
+      "default": "auto",
+      "options": [
+        "auto",
+        "hu",
+        "en"
+      ]
+    }
   }
 }
