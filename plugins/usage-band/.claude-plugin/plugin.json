@@ -1,0 +1,10 @@
+{
+  "name": "usage-band",
+  "version": "0.1.0",
+  "description": "A prompt fölötti sáv: 5 órás és heti használat, reset időponttal.",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Szota Szabolcs",
+    "email": "szota.szabolcs@gmail.com"
+  }
+}

@@ -1,0 +1,4 @@
+# A Claude Code betöltéskor generálja őket
+plugins/*/.claude-plugin/types/
+plugins/*/tsconfig.json
+.DS_Store

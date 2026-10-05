@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-mods",
+  "description": "Szota Szabolcs saját Claude Code mod-jai és kisebb pluginjai",
+  "owner": {
+    "name": "Szota Szabolcs",
+    "email": "szota.szabolcs@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "usage-band",
+      "description": "Sáv a prompt felett: modell, kontextusablak, 5 órás és heti limit reset idővel, figyelmeztetés 90% felett.",
+      "version": "0.1.0",
+      "author": { "name": "Szota Szabolcs", "email": "szota.szabolcs@gmail.com" },
+      "source": "./plugins/usage-band",
+      "category": "productivity"
+    }
+  ]
+}
