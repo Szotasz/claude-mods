@@ -22,6 +22,9 @@ let startedAt = 0
 let isRefreshing = false
 const notified = new Set<string>()
 
+// Háttérben indított munka: egy hibája ne legyen kezeletlen (pl. a modul újratöltése közben).
+const background = (work: Promise<unknown>) => void work.catch(() => undefined)
+
 const STATE_COLOR: Record<string, string> = {
   ready: 'green', success: 'green', error: 'red', failure: 'red',
   building: 'yellow', enqueued: 'yellow', processing: 'yellow', in_progress: 'yellow', queued: 'yellow',
@@ -208,10 +211,16 @@ export const register: Register = (on, options) => {
     await $.command.register({ name: 'project', description: t.commandDescription })
     if (root === undefined) return started
 
-    if (options.autoOpen !== false) void $.ui.open({ id: PANE, title: t.title(root.split('/').at(-1) ?? '') })
-    void refresh($, true)
-    $.clock.every(REFRESH_MS, () => void refresh($))
-    $.clock.every(FETCH_MS, () => void refresh($, true))
+    if (options.autoOpen !== false) {
+      const title = t.title(root.split('/').at(-1) ?? '')
+      // Keskeny terminálon a magától nyíló panel rejtve vár: szólunk, hogy ne tűnjön el nyomtalanul.
+      background($.ui.open({ id: PANE, title }).then(opened => {
+        if (!opened.isPlaced) $.ui.toast(t.waiting(opened.reason), { timeoutMs: 10_000 })
+      }))
+    }
+    background(refresh($, true))
+    $.clock.every(REFRESH_MS, () => background(refresh($)))
+    $.clock.every(FETCH_MS, () => background(refresh($, true)))
 
     return started
   })
@@ -220,14 +229,14 @@ export const register: Register = (on, options) => {
     root ??= await repoRoot($)
     if (root === undefined) return { text: t.notRepo }
     await $.ui.open({ id: PANE, title: t.title(root.split('/').at(-1) ?? '') })
-    void refresh($, true)
+    background(refresh($, true))
     return { text: t.opened }
   })
 
   // Claude futtathatott git/gh parancsot: a turn végén frissítünk (fetch nélkül, az olcsó).
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)
-    void refresh($)
+    background(refresh($))
     return done
   })
 

@@ -43,7 +43,7 @@ Sáv a prompt felett:
 
 ### project-pane
 
-Oldalpanel az aktuális git repóhoz. Magától megnyílik, ha a session git repóban indul és a terminál legalább 144 oszlop széles; bármikor: `/project`.
+Oldalpanel az aktuális git repóhoz. Magától megnyílik, ha a session git repóban indul és a terminál legalább 144 oszlop széles (miután egyszer `/project`-tel megnyitottad, 110 is elég); keskenyebb ablaknál egy toast szól, hogy vár. Bármikor: `/project`.
 
 ```
 acme/shop                          ↻ most [ Frissítés ]

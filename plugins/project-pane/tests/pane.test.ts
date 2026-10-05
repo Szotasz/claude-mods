@@ -36,16 +36,18 @@ const FILES: Record<string, string> = {
   [`${ROOT}/supabase/.temp/project-ref`]: 'abcdefghijklmnopqrst\n',
 }
 
-function engine(on: On, fixture: Fixture) {
+function engine(on: On, fixture: Fixture, waitReason?: string) {
   const ran: string[] = []
   const prompts: string[] = []
+  const toasts: string[] = []
   mock.env(on, { LANG: 'hu_HU.UTF-8' })
   mock.clock(on, { now: NOW })
   on('session.start', ($, e) => e as never)
   on('session.cwd', () => ({ value: ROOT }))
   on('command.register', ($, e) => ({ value: { command: e.name } }) as never)
-  on('ui.open', () => ({ value: { isPlaced: true } }) as never)
-  on('ui.toast', () => ({ value: undefined }))
+  on('ui.open', () =>
+    ({ value: waitReason === undefined ? { isPlaced: true } : { isPlaced: false, reason: waitReason } }) as never)
+  on('ui.toast', ($, e) => { toasts.push(e.text); return { value: undefined } })
   on('prompt.fill', ($, e) => { prompts.push(e.text); return { isFilled: true } as never })
   on('fs.read', ($, e) => (e.path in FILES ? { value: FILES[e.path]! } : ({ deny: 'ENOENT' }) as never))
   on('fs.exists', ($, e) => ({ value: e.path.endsWith('netlify.toml') }))
@@ -58,7 +60,7 @@ function engine(on: On, fixture: Fixture) {
     return { value: { exitCode: hit.exitCode ?? 0, stdout: hit.stdout ?? '', stderr: hit.stderr ?? '',
       isStdoutTruncated: false, isStderrTruncated: false } } as never
   })
-  return { ran, prompts }
+  return { ran, prompts, toasts }
 }
 
 async function start($: Engine) {
@@ -158,4 +160,11 @@ test('a sikertelen CI-ból kérdést tesz a promptba', HU, async ($, on) => {
   await ui.press({ key: 'ask-run' })
   expect(prompts[0]).toContain('gh run view 7 --log-failed')
   await ui.unmount()
+})
+
+test('keskeny terminál: szól, hogy a panel vár', HU, async ($, on) => {
+  const { toasts } = engine(on, STALE, '120 oszlop < 144')
+  await $.session.start({ cwd: ROOT, surface: 'terminal', isInteractive: true } as never)
+  for (let i = 0; i < 20 && toasts.length === 0; i++) await Promise.resolve()
+  expect(toasts.some(x => x.includes('120 oszlop < 144') && x.includes('/project'))).toBe(true)
 })

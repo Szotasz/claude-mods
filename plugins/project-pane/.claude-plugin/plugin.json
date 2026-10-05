@@ -1,8 +1,11 @@
 {
   "name": "project-pane",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Side pane for the current repo: git state with a one-press GitHub sync, Netlify deploys, PRs and CI, Supabase project. Hungarian or English.",
-  "author": { "name": "Szota Szabolcs", "email": "szota.szabolcs@gmail.com" },
+  "author": {
+    "name": "Szota Szabolcs",
+    "email": "szota.szabolcs@gmail.com"
+  },
   "types": "./types/index.d.ts",
   "userConfig": {
     "language": {
@@ -11,7 +14,11 @@
       "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
       "required": false,
       "default": "auto",
-      "options": ["auto", "hu", "en"]
+      "options": [
+        "auto",
+        "hu",
+        "en"
+      ]
     },
     "autoOpen": {
       "type": "boolean",
