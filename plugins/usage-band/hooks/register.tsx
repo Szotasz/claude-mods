@@ -29,16 +29,14 @@ const STRINGS: Record<'hu' | 'en', Strings> = {
 // A modul minden beállításváltáskor újratöltődik, így elég egyszer, induláskor eldönteni.
 let t: Strings = STRINGS.en
 const LABELS = (): Record<string, string> => t.labels
-const WIDTH = 10
+const WIDTH = 8
 
 function bar(percent: number): string {
   const filled = Math.min(WIDTH, Math.round((percent / 100) * WIDTH))
   return '█'.repeat(filled) + '░'.repeat(WIDTH - filled)
 }
 
-function color(percent: number): string {
-  return percent >= 90 ? 'red' : percent >= 70 ? 'yellow' : 'green'
-}
+const warnMark = (percent: number) => (percent >= WARN_AT ? ' ⚠' : '')
 
 function resetText(kind: string, resetsAt?: string): string {
   if (resetsAt === undefined) return ''
@@ -62,6 +60,25 @@ function toContext(usage: SessionContextUsage): Context | null {
 async function refreshModel($: EngineInterface): Promise<void> {
   const current = await $.session.model()
   await update($, model, () => current)
+}
+
+// A státuszsor sima szöveg (színt nem visz): a 90% fölötti értéket ⚠ jelzi.
+async function pushStatus($: EngineInterface): Promise<void> {
+  const name = await read($, model)
+  const ctx = await read($, context)
+  const shown = (await read($, limits)).filter(l => l.kind in LABELS())
+
+  const parts: string[] = []
+  if (name !== null) parts.push(`🤖 ${name}`)
+  if (ctx !== null) {
+    const used = ctx.tokens === undefined ? '' : ` ${tokens(ctx.tokens)}/${tokens(ctx.window)}`
+    parts.push(`Ctx ${bar(ctx.percent)} ${ctx.percent}%${used}${warnMark(ctx.percent)}`)
+  }
+  for (const l of shown) {
+    const pct = Math.round(l.percentUsed)
+    parts.push(`${LABELS()[l.kind]} ${bar(l.percentUsed)} ${pct}%${warnMark(l.percentUsed)}${resetText(l.kind, l.resetsAt)}`)
+  }
+  $.ui.status(parts.length === 0 ? undefined : parts.join('  │  '))
 }
 
 async function warnPast90($: EngineInterface, current: Limit[]): Promise<void> {
@@ -97,12 +114,14 @@ export const register: Register = (on, options) => {
     await update($, context, () => toContext(usage.context))
     await warnPast90($, usage.rateLimits)
     await refreshModel($)
+    await pushStatus($)
     return result
   })
 
   on('classic.PostModelSwitch', async ($, e, next) => {
     const result = await next(e)
     await refreshModel($)
+    await pushStatus($)
     return result
   })
 
@@ -118,39 +137,7 @@ export const register: Register = (on, options) => {
       await update($, limits, () => current)
       await warnPast90($, current)
     }
+    await pushStatus($)
     return next(e)
-  })
-
-  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const shown = (await read($, limits)).filter(l => l.kind in LABELS())
-    const ctx = await read($, context)
-    const name = await read($, model)
-    if (e.props.hasSurvey || (shown.length === 0 && ctx === null && name === null)) return next(e)
-
-    const { Box, Text } = $.ui.resolve(e)
-
-    return (
-      <Box flexDirection="row" gap={3}>
-        {name !== null && <Text bold>🤖 {name}</Text>}
-        {ctx !== null && (
-          <Box key="context" flexDirection="row">
-            <Text dimColor>Ctx </Text>
-            <Text color={color(ctx.percent)}>{bar(ctx.percent)}</Text>
-            <Text bold> {ctx.percent}%</Text>
-            <Text dimColor>
-              {ctx.tokens === undefined ? '' : ` ${tokens(ctx.tokens)}/${tokens(ctx.window)}`}
-            </Text>
-          </Box>
-        )}
-        {shown.map(l => (
-          <Box key={l.kind} flexDirection="row">
-            <Text dimColor>{LABELS()[l.kind]} </Text>
-            <Text color={color(l.percentUsed)}>{bar(l.percentUsed)}</Text>
-            <Text bold> {Math.round(l.percentUsed)}%</Text>
-            <Text dimColor>{resetText(l.kind, l.resetsAt)}</Text>
-          </Box>
-        ))}
-      </Box>
-    )
   })
 }

@@ -16,18 +16,16 @@ Frissítés: `claude plugin update usage-band@claude-mods`, majd `/reload-plugin
 
 ### usage-band
 
-Sáv a prompt felett:
+A státuszsorba (a prompt alá) írja:
 
 ```
-🤖 Opus 5.5   Ctx ████░░░░░░ 42% 420k/1M   5h ███░░░░░░░ 34% → 16:20   Hét █████████░ 93% → Cs 10:00
+🤖 Opus 5.5  │  Ctx ███░░░░░ 42% 420k/1M  │  5h ███░░░░░ 34% → 16:20  │  Hét ███████░ 93% ⚠ → Cs 10:00
 ```
 
 - modell neve (`/model` váltáskor és turn végén frissül)
 - kontextusablak telítettsége
 - 5 órás és heti rate-limit, reset időponttal (csak Pro/Max előfizetéssel)
-- toast, ha egy limit átlépi a 90%-ot (ablakonként, resetenként egyszer)
-
-Összecsukás: `ctrl+x ctrl+a`.
+- ⚠ 90% felett, és egy toast, amikor egy limit átlépi (ablakonként, resetenként egyszer)
 
 **Nyelv / Language:** `/config` → `usage-band.language`, vagy a `settings.json`-ban:
 
@@ -92,7 +90,7 @@ project-pane bővítése:
 - remote Supabase migrációk összevetése a lokálissal
 - több repó egy panelen
 
-Sáv bővítése (`usage-band`):
+Státuszsor bővítése (`usage-band`):
 - figyelmeztetés kontextusablakra (pl. 85%), opcionálisan automatikus `/compact`
 - session költsége (`$.session.usage().cost`)
 - fast mód jelzése, git branch, aktuális projekt

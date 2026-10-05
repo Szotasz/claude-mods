@@ -1,7 +1,7 @@
 {
   "name": "usage-band",
-  "version": "0.2.0",
-  "description": "Band above the prompt: model, context window, 5-hour and weekly limits with reset times, warning past 90%. Hungarian or English.",
+  "version": "0.3.0",
+  "description": "Status line: model, context window, 5-hour and weekly limits with reset times, warning past 90%. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "Szota Szabolcs",

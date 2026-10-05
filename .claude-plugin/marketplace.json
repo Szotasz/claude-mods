@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "usage-band",
-      "description": "Sáv a prompt felett: modell, kontextusablak, 5 órás és heti limit reset idővel, figyelmeztetés 90% felett. Magyar/angol.",
-      "version": "0.2.0",
+      "description": "Státuszsor: modell, kontextusablak, 5 órás és heti limit reset idővel, figyelmeztetés 90% felett. Magyar/angol.",
+      "version": "0.3.0",
       "author": {
         "name": "Szota Szabolcs",
         "email": "szota.szabolcs@gmail.com"
