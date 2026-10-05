@@ -7,6 +7,7 @@ Saját Claude Code mod-ok (function hook pluginek) egy pluginpiacon.
 ```
 claude plugin marketplace add Szotasz/claude-mods
 claude plugin install usage-band@claude-mods
+claude plugin install project-pane@claude-mods
 ```
 
 Frissítés: `claude plugin update usage-band@claude-mods`, majd `/reload-plugins` (vagy új session).
@@ -40,7 +41,56 @@ Sáv a prompt felett:
 
 **Követelmény:** Claude Code 2.1.289 körüli verzió. A mod-API early access, kiadásról kiadásra változhat.
 
+### project-pane
+
+Oldalpanel az aktuális git repóhoz. Magától megnyílik, ha a session git repóban indul és a terminál legalább 144 oszlop széles; bármikor: `/project`.
+
+```
+acme/shop                          ↻ most [ Frissítés ]
+GIT
+🌿 develop  ↑0 ↓0  · 7 módosított fájl
+utolsó commit: 57704fe · 7 hónapja — Fix checkout flow
+⚠ a main 13 committal előrébb jár, te a develop branch-en vagy
+Előbb commitold a módosításokat, vagy tedd félre őket:
+[ Stash + szinkron ]
+DEPLOY (Netlify)
+✔ ready  main  3 perce
+PULL REQUESTEK
+✔ #142 Stripe webhook retry  · approved
+CI (GitHub Actions)
+✘ netlify-deploy-verify  main · 5 napja      [ Kérdezd Claude-ot ]
+SUPABASE
+abcdefghijklmnopqrst · Acme Shop · eu-west-3
+18 migráció · utolsó: 018_add_orders_rls.sql
+GitHub  Netlify  Supabase
+```
+
+- **Szinkron gomb** (`s`): csak fast-forward, soha nem merge-öl, rebase-el vagy töröl.
+  - a branch lemaradt az upstreamtől → `git pull --ff-only`
+  - másik branchen vagy, és az alapértelmezett (main) előrébb jár → `git switch main` + `git merge --ff-only origin/main`
+  - commitolatlan módosítás esetén csak „Stash + szinkron” van: `git stash push -u`, vissza: `git stash pop`
+  - ha elakad, a hibát Claude-nak szóló kérdésként a promptba teszi
+- **Frissítés** (`r`): 60 mp-enként és minden turn végén; `git fetch` 5 percenként.
+- **Kérdezd Claude-ot** (`a`): a legutóbbi elbukott CI-futásról kérdést tesz a promptba.
+- Toast, ha a session alatt elbukik egy Netlify deploy vagy CI-futás.
+
+Adatforrások (a CLI-k saját bejelentkezésével, a plugin tokent nem olvas):
+
+| Szekció | Forrás | Ha hiányzik |
+|---|---|---|
+| Git | `git` | — |
+| PR, CI | `gh` (`gh auth login`) | tipp a panelen |
+| Deploy | `netlify` CLI + `.netlify/state.json` | `npm i -g netlify-cli && netlify login` |
+| Supabase | `supabase/.temp/project-ref`, `supabase/migrations`, `supabase projects list` | `supabase login` az állapothoz |
+
+Beállítás (`/config`): `project-pane.language` (`auto`/`hu`/`en`), `project-pane.autoOpen` (alapból be).
+
 ## Ötletek
+
+project-pane bővítése:
+- Vercel deploy-ok (`vercel ls`)
+- remote Supabase migrációk összevetése a lokálissal
+- több repó egy panelen
 
 Sáv bővítése (`usage-band`):
 - figyelmeztetés kontextusablakra (pl. 85%), opcionálisan automatikus `/compact`
@@ -52,7 +102,6 @@ Sáv bővítése (`usage-band`):
 - **env-guard**: `.env`, kulcsfájlok, `supabase/.temp` szerkesztésének tiltása (`tool.call` → `deny`)
 - **prod-guard**: éles Supabase projekt ID-jára vagy `git push origin main`-re megerősítés kérése
 - **turn-timer**: hosszú turn végén hang/toast, hogy vissza lehet nézni (`turn.complete`, `$.audio.play`)
-- **project-pane**: oldalpanel az aktuális repó Netlify/Vercel deploy állapotával és nyitott PR-jeivel
 - **quote**: `/quote` — a kijelölt szöveget idézetként a promptba teszi (`$.ui.selection`)
 - **hu-prompt**: a rendszerpromptba magyar válasz- és stílusszabály (`prompt.compose`)
 

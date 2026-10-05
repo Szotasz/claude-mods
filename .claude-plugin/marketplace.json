@@ -17,6 +17,17 @@
       },
       "source": "./plugins/usage-band",
       "category": "productivity"
+    },
+    {
+      "name": "project-pane",
+      "version": "0.1.0",
+      "description": "Oldalpanel az aktuális repóhoz: git állapot egygombos GitHub-szinkronnal, Netlify deploy, PR-ek és CI, Supabase projekt. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/project-pane",
+      "category": "productivity"
     }
   ]
 }

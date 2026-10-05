@@ -1,0 +1,24 @@
+{
+  "name": "project-pane",
+  "version": "0.1.0",
+  "description": "Side pane for the current repo: git state with a one-press GitHub sync, Netlify deploys, PRs and CI, Supabase project. Hungarian or English.",
+  "author": { "name": "Szota Szabolcs", "email": "szota.szabolcs@gmail.com" },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "language": {
+      "type": "string",
+      "title": "Language / Nyelv",
+      "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
+      "required": false,
+      "default": "auto",
+      "options": ["auto", "hu", "en"]
+    },
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open by itself",
+      "description": "Open the pane when a session starts in a git repository (it seats once the terminal is at least 144 columns wide). /project always opens it.",
+      "required": false,
+      "default": true
+    }
+  }
+}
