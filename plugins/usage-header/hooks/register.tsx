@@ -1,12 +1,16 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, SessionContextBreakdown } from 'claude-code'
 
-import type { Breakdown, Limit, Segment } from '../types'
+import type { Breakdown, Limit, Segment, Task } from '../types'
 
 const breakdown = atom({ plugin: 'usage-header', key: 'breakdown' } as const, null)
 const limits = atom({ plugin: 'usage-header', key: 'limits' } as const, [])
 // Kikapcsolva a sáv üres; az eszköztár (tool-hub) is ezt olvassa.
 const isOn = atom({ plugin: 'usage-header', key: 'isOn' } as const, true)
+
+// A hivatkozásnak szó szerint kell a forrásban állnia (így listázható, mit olvas a mod).
+const FOCUS_ON = { plugin: 'focus-mode', key: 'isOn' } as const
+const FOCUS_TASKS = { plugin: 'focus-mode', key: 'tasks' } as const
 
 const WARN_AT = 90
 const CAUTION_AT = 70
@@ -113,6 +117,26 @@ function resetText(kind: string, resetsAt?: string): string {
   const at = new Date(resetsAt)
   const hhmm = `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
   return kind === 'five_hour' ? ` → ${hhmm}` : ` → ${t().days[at.getDay()]} ${hhmm}`
+}
+
+// A fókusz mód feliratai és elrendezése (focus-mode/hooks/register.tsx): ebből jön a lista legszélesebb sora.
+const FOCUS_TEXT = {
+  hu: { title: 'Fókusz mód', done: 'kész', waiting: 'a részfeladatok hamarosan megjelennek…', idle: 'bekapcsolva · /fokusz ki a kikapcsoláshoz' },
+  en: { title: 'Focus mode', done: 'done', waiting: 'subtasks will show up shortly…', idle: 'on · /fokusz off to turn it off' },
+}
+
+export function focusWidth(list: readonly Task[], columns: number, isWorking: boolean, l: Lang): number {
+  const f = FOCUS_TEXT[l]
+  if (list.length === 0) return 2 + f.title.length + 1 + (isWorking ? f.waiting : f.idle).length
+  const done = list.filter(task => task.status === 'done').length
+  const total = Math.round(list.reduce((sum, task) => sum + task.progress, 0) / list.length)
+  const header = `◆ ${f.title}  ${done}/${list.length} ${f.done}  `.length + 12 + ` ${total}%`.length
+  const titleRoom = Math.max(10, columns - 24)
+  const rows = list.map(task => {
+    const name = Math.min(task.title.length, titleRoom)
+    return task.status === 'in_progress' ? 4 + name + 1 + 8 + ` ${task.progress}%`.length : 4 + name
+  })
+  return Math.max(header, ...rows)
 }
 
 async function refresh($: EngineInterface): Promise<void> {
@@ -233,11 +257,17 @@ export const register: Register = (on, options) => {
         </Box>
       )
 
+    // Ha a fókusz mód lista van fölötte, a vonal annak legszélesebb soráig tart, különben a kontextussorig.
+    const focusOn = (await $.state.get(FOCUS_ON)).value === true
+    const focusList = focusOn ? ((await $.state.get(FOCUS_TASKS)).value ?? []) : []
+    const ownWidth = b === null || b.segments.length === 0 ? LABEL + t().noData.length : LABEL + width + 16
+    const divider = Math.max(10, Math.min(columns - 1, focusOn ? focusWidth(focusList, columns, e.props.isWorking, lang) : ownWidth))
+
     // Vonal a sáv tetején: elválasztja a fölötte lévő modoktól (fókusz mód listája, eszköztár).
     return (
       <Box flexDirection="column">
         {below}
-        <Text key="divider" dimColor>{'─'.repeat(Math.max(10, columns))}</Text>
+        <Text key="divider" dimColor>{'─'.repeat(divider)}</Text>
         {contextRows}
         {limitRow}
       </Box>

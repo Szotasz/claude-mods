@@ -56,7 +56,8 @@ for (const surface of ['terminal', 'desktop'] as const) {
     await $.session.start({ cwd: '/tmp', surface, isInteractive: true } as never)
     const ui = await mount($, surface)
     expect(await ui.find({ type: 'Text', text: /^Kontextus/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /^─{120}$/ })).toBeDefined()
+    // Fókusz mód nélkül a vonal a kontextussorig tart (11 + 60 + 16), nem a teljes szélességig.
+    expect(await ui.find({ type: 'Text', text: /^─{87}$/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: ' 42%' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Rendszerprompt 3k' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Üzenetek 69k' })).toBeDefined()
@@ -97,5 +98,20 @@ test('angolul is', { options: { language: 'en' } }, async ($, on) => {
   const ui = await mount($, 'terminal')
   expect(await ui.find({ type: 'Text', text: 'System prompt 3k' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: 'Week ' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('fókusz móddal a vonal a lista legszélesebb soráig tart', HU, async ($, on) => {
+  engine(on)
+  const tasks = [
+    { title: 'Rövid', status: 'done', progress: 100 },
+    { title: 'Vonal hosszának igazítása', status: 'in_progress', progress: 40 },
+  ]
+  on('state.get', ($, e, next) =>
+    e.plugin === 'focus-mode' ? ({ value: { value: e.key === 'isOn' ? true : tasks, version: 1 } }) as never : next(e))
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true } as never)
+  const ui = await mount($, 'terminal')
+  // fejléc: "◆ Fókusz mód  1/2 kész  " (24) + 12 + " 70%" (4) = 40; a futó sor: 4 + 25 + 1 + 8 + 4 = 42
+  expect(await ui.find({ type: 'Text', text: /^─{42}$/ })).toBeDefined()
   await ui.unmount()
 })
