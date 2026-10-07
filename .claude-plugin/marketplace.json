@@ -19,6 +19,17 @@
       "category": "productivity"
     },
     {
+      "name": "usage-header",
+      "version": "0.1.0",
+      "description": "Sáv a prompt fölött: a kontextusablak kategóriánként színes sávban (rendszerprompt, eszközök, memória, üzenetek, szabad hely…), alatta az 5 órás és a heti limit színes sávval és reset idővel. /hasznalat be|ki. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/usage-header",
+      "category": "productivity"
+    },
+    {
       "name": "project-pane",
       "version": "0.3.0",
       "description": "Oldalpanel az aktuális repóhoz: git állapot egygombos GitHub-szinkronnal, Netlify deploy, PR-ek és CI, Supabase projekt. Magyar/angol. /project be|ki.",
@@ -42,8 +53,8 @@
     },
     {
       "name": "tool-hub",
-      "version": "0.4.0",
-      "description": "Eszköztár: a prompt alatti lábléc jobb oldalán egy ⚙ gomb (vagy /eszkozok) a prompt fölötti sávban nyit kapcsolókat a modokhoz: fókusz mód, limitsáv, projektpanel, kígyó játék. Magyar/angol.",
+      "version": "0.5.0",
+      "description": "Eszköztár: a prompt alatti lábléc jobb oldalán egy ⚙ gomb (vagy /eszkozok) a prompt fölötti sávban nyit kapcsolókat a modokhoz: fókusz mód, limitsáv, használati sáv, projektpanel, kígyó játék. Magyar/angol.",
       "author": {
         "name": "Szota Szabolcs",
         "email": "szota.szabolcs@gmail.com"

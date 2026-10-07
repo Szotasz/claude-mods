@@ -7,6 +7,7 @@ Saját Claude Code mod-ok (function hook pluginek) egy pluginpiacon.
 ```
 claude plugin marketplace add Szotasz/claude-mods
 claude plugin install usage-band@claude-mods
+claude plugin install usage-header@claude-mods
 claude plugin install project-pane@claude-mods
 claude plugin install focus-mode@claude-mods
 claude plugin install tool-hub@claude-mods
@@ -41,6 +42,24 @@ A státuszsorba (a prompt alá) írja:
 - `en`: English (`Week`, `Thu 10:00`)
 
 **Követelmény:** Claude Code 2.1.289 körüli verzió. A mod-API early access, kiadásról kiadásra változhat.
+
+### usage-header
+
+Sáv a prompt fölött: a kontextusablak kategóriánként színezve, alatta az 5 órás és a heti limit.
+
+```
+Kontextus  ██▓▓▓▓▓▓████████████▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░ 42% 84k/200k
+           ■ Rendszerprompt 3k  ■ Eszközök 12k  ■ Memória 400  ■ Üzenetek 69k  ▒ Tömörítési tartalék 33k  ░ Szabad 83k
+Limitek    5 óra ███████░░░░░░░░░░░░░ 34% → 16:20   Hét ███████████████████░ 93% ⚠ → Cs 10:00
+```
+
+- A kontextussáv minden kategóriája a `/context` saját színével látszik (rendszerprompt, eszközök, MCP, memóriafájlok, skillek, ágensek, üzenetek), utána a tömörítési tartalék és a szabad hely halványan; alatta jelmagyarázat tokenszámmal. Az igény szerint betöltött (halasztott) eszközsémák kimaradnak, mert nincsenek az ablakban.
+- A bontás helyi becslés (`$.session.usage({ breakdown: 'summary' })`), API-hívás nélkül; minden turn végén és limitmozduláskor frissül.
+- Limitek: zöld 70% alatt, sárga 70–90%, piros 90% fölött (⚠), reset időponttal. Csak Pro/Max előfizetéssel van adat.
+- `/hasznalat` kapcsolja, `/hasznalat be|ki` beállítja; az állapotot sessionök között megőrzi. Az eszköztárban (`/eszkozok`) is kapcsolható.
+- A sávot megosztja a fókusz mód listájával és az eszköztárral (azok alatt jelenik meg).
+
+Beállítás (`/config`): `usage-header.language` (`auto`/`hu`/`en`).
 
 ### project-pane
 
@@ -108,16 +127,17 @@ Eszköztár: egy helyről kapcsolhatók a fenti modok. A prompt alatti lábléc 
 
 ```
 ⚙ Szabolcs eszközei  kattintás, vagy ctrl+x tab után szám  [ Bezár ]
-1. Fókusz mód   ● BE  [ Kikapcsol ] · Csak a részfeladatok listája és a végső válasz látszik
-2. Limitsáv     ○ KI  [ Bekapcsol ] · Alsó sáv: 5 órás és heti limit, kontextusablak
-3. Projektpanel ● BE  [ Kikapcsol ] · GitHub, CI, Netlify és Supabase állapot oldalt
-4. Kígyó játék  ● BE  [ Kikapcsol ] · Oldalt nyílik promptküldéskor, amíg Claude dolgozik
+1. Fókusz mód     ● BE  [ Kikapcsol ] · Csak a részfeladatok listája és a végső válasz látszik
+2. Limitsáv       ○ KI  [ Bekapcsol ] · Alsó sáv: 5 órás és heti limit, kontextusablak
+3. Használati sáv ● BE  [ Kikapcsol ] · Prompt fölött: kontextus kategóriánként színezve, 5 órás és heti limit
+4. Projektpanel   ● BE  [ Kikapcsol ] · GitHub, CI, Netlify és Supabase állapot oldalt
+5. Kígyó játék    ● BE  [ Kikapcsol ] · Oldalt nyílik promptküldéskor, amíg Claude dolgozik
 ```
 
-- Modonként BE/KI állapot és kapcsoló gomb, `ctrl+x tab` után az `1`–`4` számbillentyűvel is.
+- Modonként BE/KI állapot és kapcsoló gomb, `ctrl+x tab` után az `1`–`5` számbillentyűvel is.
 - Ami nincs telepítve, „nincs betöltve” felirattal jelenik meg.
 - Bekapcsolt fókusz módnál a lábléc is kiírja: „Fókusz mód”.
-- Parancsból is ugyanez: `/fokusz`, `/limitsav`, `/project`, `/jatek` (mind `be|ki` argumentummal).
+- Parancsból is ugyanez: `/fokusz`, `/limitsav`, `/hasznalat`, `/project`, `/jatek` (mind `be|ki` argumentummal).
 - A sávot megosztja a fókusz mód listájával (a kapcsolók alatta jelennek meg).
 
 Új mod felvétele az eszköztárba: a mod írja a saját `isOn` állapotát, adjon `/<parancs> be|ki`-t, és hookolja a `state.set`-et `{ plugin: 'tool-hub', key: 'request' }`-re; a hubban egy sor a `TOOLS` listába, egy ág a `stateOf`-ba és a kulcs a `types/index.d.ts`-be.

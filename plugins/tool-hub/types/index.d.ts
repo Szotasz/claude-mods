@@ -7,6 +7,7 @@ declare module 'claude-code' {
     'tool-hub': { isOpen: boolean; request: HubRequest | null }
     'focus-mode': { isOn: boolean }
     'usage-band': { isOn: boolean }
+    'usage-header': { isOn: boolean }
     'project-pane': { isOn: boolean }
     'snake-pane': { isOn: boolean }
   }

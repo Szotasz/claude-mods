@@ -31,6 +31,15 @@ const TOOLS = [
     },
   },
   {
+    id: 'header',
+    command: 'hasznalat',
+    label: { hu: 'Használati sáv', en: 'Usage band' },
+    detail: {
+      hu: 'Prompt fölött: kontextus kategóriánként színezve, 5 órás és heti limit',
+      en: 'Above the prompt: context by category in colours, 5-hour and weekly limits',
+    },
+  },
+  {
     id: 'project',
     command: 'project',
     label: { hu: 'Projektpanel', en: 'Project pane' },
@@ -95,6 +104,7 @@ async function pickLanguage($: EngineInterface, setting: unknown): Promise<Lang>
 // A hivatkozásoknak szó szerint kell a forrásban állniuk (így listázható, mit olvas a mod).
 const FOCUS = { plugin: 'focus-mode', key: 'isOn' } as const
 const LIMITS = { plugin: 'usage-band', key: 'isOn' } as const
+const HEADER = { plugin: 'usage-header', key: 'isOn' } as const
 const PROJECT = { plugin: 'project-pane', key: 'isOn' } as const
 const GAME = { plugin: 'snake-pane', key: 'isOn' } as const
 
@@ -105,6 +115,8 @@ async function stateOf($: EngineInterface, tool: Tool): Promise<boolean | undefi
       return (await $.state.get(FOCUS)).value
     case 'limits':
       return (await $.state.get(LIMITS)).value
+    case 'header':
+      return (await $.state.get(HEADER)).value
     case 'project':
       return (await $.state.get(PROJECT)).value
     case 'game':

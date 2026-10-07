@@ -1,7 +1,7 @@
 {
-  "name": "tool-hub",
-  "version": "0.5.0",
-  "description": "Toolbox: a button at the bottom right of the prompt footer (or /eszkozok) opens switches above the prompt for Szabolcs's mods (focus mode, usage bar, project pane, snake game, ...). Hungarian or English.",
+  "name": "usage-header",
+  "version": "0.1.0",
+  "description": "Band above the prompt: context window broken down by category in colours, plus the 5-hour and weekly limits. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "Szota Szabolcs",
@@ -14,11 +14,7 @@
       "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
       "required": false,
       "default": "auto",
-      "options": [
-        "auto",
-        "hu",
-        "en"
-      ]
+      "options": ["auto", "hu", "en"]
     }
   }
 }

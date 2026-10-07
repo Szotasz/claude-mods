@@ -1,0 +1,14 @@
+// Egy kategória a kontextusablakból, ahogy a /context listázza; a szín a téma kulcsa.
+export type Segment = { name: string; tokens: number; color: string; kind: 'used' | 'free' | 'buffer' }
+export type Breakdown = { segments: Segment[]; total: number; max: number; percent: number }
+export type Limit = { kind: string; percentUsed: number; resetsAt?: string }
+
+// Az eszköztár (tool-hub) kérése: a kapcsoló gomb ezt írja, a mod a state.set hookjában veszi át.
+export type HubRequest = { tool: string; on: boolean; n: number }
+
+declare module 'claude-code' {
+  interface PluginState {
+    'tool-hub': { request: HubRequest | null }
+    'usage-header': { breakdown: Breakdown | null; limits: Limit[]; isOn: boolean }
+  }
+}
