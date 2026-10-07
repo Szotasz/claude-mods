@@ -8,6 +8,7 @@ Saját Claude Code mod-ok (function hook pluginek) egy pluginpiacon.
 claude plugin marketplace add Szotasz/claude-mods
 claude plugin install usage-band@claude-mods
 claude plugin install project-pane@claude-mods
+claude plugin install snake-pane@claude-mods
 ```
 
 Frissítés: `claude plugin update usage-band@claude-mods`, majd `/reload-plugins` (vagy új session).
@@ -82,6 +83,28 @@ Adatforrások (a CLI-k saját bejelentkezésével, a plugin tokent nem olvas):
 | Supabase | `supabase/.temp/project-ref`, `supabase/migrations`, `supabase projects list` | `supabase login` az állapothoz |
 
 Beállítás (`/config`): `project-pane.language` (`auto`/`hu`/`en`), `project-pane.autoOpen` (alapból be).
+
+### snake-pane
+
+Kígyó játék az oldalpanelben, amíg Claude dolgozik.
+
+```
+⏳ Claude dolgozik…
+Pont: 4  Rekord: 17
+╭──────────────────────────────────────╮
+│                                      │
+│          ████████                    │
+│                ██      ●             │
+╰──────────────────────────────────────╯
+p: szünet · r: újra
+w: ↑ a: ← s: ↓ d: → p: szünet r: új
+```
+
+- Promptküldéskor magától megnyílik (ha ebben a sessionben bezártad, már nem; `/jatek` mindig nyitja). `/jatek ki` kikapcsolja, az eszköztárban (`/eszkozok`) is kapcsolható.
+- Irányítás: kattints a táblára, utána nyilak / `wasd` / `hjkl`, szóköz vagy `p` szünet, `r` új játék. Vagy `ctrl+x tab` a panelre, és a `w a s d p r` gombok.
+- A turn végén a futó játék szünetel („Claude végzett”), hogy visszatérj a munkához.
+- A pontszámmal gyorsul; a rekordot sessionök között megőrzi.
+- A játék a rajzoló szálon fut (`Client` surface modul), nem terheli a sessiont.
 
 ## Ötletek
 

@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "usage-band",
-      "description": "Státuszsor: modell, kontextusablak, 5 órás és heti limit reset idővel, figyelmeztetés 90% felett. Magyar/angol.",
-      "version": "0.3.0",
+      "description": "Státuszsor: modell, kontextusablak, 5 órás és heti limit reset idővel, figyelmeztetés 90% felett. Magyar/angol. /limitsav be|ki.",
+      "version": "0.5.0",
       "author": {
         "name": "Szota Szabolcs",
         "email": "szota.szabolcs@gmail.com"
@@ -20,13 +20,46 @@
     },
     {
       "name": "project-pane",
-      "version": "0.1.1",
-      "description": "Oldalpanel az aktuális repóhoz: git állapot egygombos GitHub-szinkronnal, Netlify deploy, PR-ek és CI, Supabase projekt. Magyar/angol.",
+      "version": "0.3.0",
+      "description": "Oldalpanel az aktuális repóhoz: git állapot egygombos GitHub-szinkronnal, Netlify deploy, PR-ek és CI, Supabase projekt. Magyar/angol. /project be|ki.",
       "author": {
         "name": "Szota Szabolcs",
         "email": "szota.szabolcs@gmail.com"
       },
       "source": "./plugins/project-pane",
+      "category": "productivity"
+    },
+    {
+      "name": "focus-mode",
+      "version": "0.3.0",
+      "description": "Fókusz mód: elrejti az eszközhívásokat, a köztes szöveget, a promptjaidat és a parancsok kimenetét; csak a részfeladatok listája látszik állapotsávval és pipával, meg a végső válasz. /fokusz be|ki. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/focus-mode",
+      "category": "productivity"
+    },
+    {
+      "name": "tool-hub",
+      "version": "0.4.0",
+      "description": "Eszköztár: a prompt alatti lábléc jobb oldalán egy ⚙ gomb (vagy /eszkozok) a prompt fölötti sávban nyit kapcsolókat a modokhoz: fókusz mód, limitsáv, projektpanel, kígyó játék. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/tool-hub",
+      "category": "productivity"
+    },
+    {
+      "name": "snake-pane",
+      "version": "0.1.0",
+      "description": "Kígyó játék az oldalpanelben, amíg Claude dolgozik: promptküldéskor nyílik, a turn végén szünetel, rekordot ment. /jatek be|ki. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/snake-pane",
       "category": "productivity"
     }
   ]

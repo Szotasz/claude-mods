@@ -1,0 +1,31 @@
+{
+  "name": "snake-pane",
+  "version": "0.1.0",
+  "description": "Snake in the side pane while Claude works: opens when you send a prompt, pauses when the turn ends, keeps your best score. /jatek be|ki. Hungarian or English.",
+  "author": {
+    "name": "Szota Szabolcs",
+    "email": "szota.szabolcs@gmail.com"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "language": {
+      "type": "string",
+      "title": "Language / Nyelv",
+      "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
+      "required": false,
+      "default": "auto",
+      "options": [
+        "auto",
+        "hu",
+        "en"
+      ]
+    },
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open with each prompt",
+      "description": "Open the game pane when you send a prompt (unless you closed it in this session). /jatek always opens it.",
+      "required": false,
+      "default": true
+    }
+  }
+}
