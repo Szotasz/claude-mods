@@ -1,6 +1,6 @@
 {
   "name": "project-pane",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "description": "Side pane for the current repo: git state with a one-press GitHub sync, Netlify deploys, PRs and CI, Supabase project. Hungarian or English.",
   "author": {
     "name": "Szota Szabolcs",

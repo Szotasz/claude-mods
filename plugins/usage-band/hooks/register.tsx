@@ -8,21 +8,31 @@ const limits = atom({ plugin: 'usage-band', key: 'limits' } as const, [])
 const warned = atom({ plugin: 'usage-band', key: 'warned' } as const, [])
 const context = atom({ plugin: 'usage-band', key: 'context' } as const, null)
 const model = atom({ plugin: 'usage-band', key: 'model' } as const, null)
+// Kikapcsolva üres a státuszsor; az eszköztár (tool-hub) is ezt olvassa.
+const isOn = atom({ plugin: 'usage-band', key: 'isOn' } as const, true)
 
 const WARN_AT = 90
 
-type Strings = { labels: Record<string, string>; days: string[]; limit: string }
+type Strings = { labels: Record<string, string>; days: string[]; limit: string; command: string; on: string; off: string; usage: string }
 
 const STRINGS: Record<'hu' | 'en', Strings> = {
   hu: {
     labels: { five_hour: '5h', seven_day: 'Hét' },
     days: ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'],
     limit: 'limit',
+    command: 'Limit- és kontextussáv be/ki',
+    on: 'Limitsáv bekapcsolva.',
+    off: 'Limitsáv kikapcsolva.',
+    usage: 'Használat: /limitsav [be|ki]',
   },
   en: {
     labels: { five_hour: '5h', seven_day: 'Week' },
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     limit: 'limit',
+    command: 'Usage and context bar on/off',
+    on: 'Usage bar on.',
+    off: 'Usage bar off.',
+    usage: 'Usage: /limitsav [on|off]',
   },
 }
 
@@ -64,6 +74,10 @@ async function refreshModel($: EngineInterface): Promise<void> {
 
 // A státuszsor sima szöveg (színt nem visz): a 90% fölötti értéket ⚠ jelzi.
 async function pushStatus($: EngineInterface): Promise<void> {
+  if (!(await read($, isOn))) {
+    $.ui.status(undefined)
+    return
+  }
   const name = await read($, model)
   const ctx = await read($, context)
   const shown = (await read($, limits)).filter(l => l.kind in LABELS())
@@ -97,6 +111,12 @@ async function warnPast90($: EngineInterface, current: Limit[]): Promise<void> {
   await update($, warned, list => [...list, ...fresh.map(l => `${l.kind}@${l.resetsAt}`)])
 }
 
+async function setOn($: EngineInterface, wanted: boolean): Promise<void> {
+  await update($, isOn, () => wanted)
+  await $.store.set('isOn', wanted)
+  await pushStatus($)
+}
+
 async function pickLanguage($: EngineInterface, setting: unknown): Promise<Strings> {
   if (setting === 'hu' || setting === 'en') return STRINGS[setting]
   const locale = (await $.env.get('LC_ALL')) || (await $.env.get('LANG')) || ''
@@ -109,6 +129,9 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     t = await pickLanguage($, options.language)
     const result = await next(e)
+    const saved = (await $.store.get('isOn')) !== false
+    await update($, isOn, () => saved)
+    await $.command.register({ name: 'limitsav', description: t.command, argumentHint: t === STRINGS.hu ? '[be|ki]' : '[on|off]', immediate: true })
     const usage = await $.session.usage()
     await update($, limits, () => usage.rateLimits)
     await update($, context, () => toContext(usage.context))
@@ -116,6 +139,21 @@ export const register: Register = (on, options) => {
     await refreshModel($)
     await pushStatus($)
     return result
+  })
+
+  on('command.run', { command: 'limitsav' }, async ($, e) => {
+    const arg = e.args.trim().toLowerCase()
+    const wanted = ['be', 'on'].includes(arg) ? true : ['ki', 'off'].includes(arg) ? false : arg === '' ? !(await read($, isOn)) : null
+    if (wanted === null) return { text: t.usage }
+    await setOn($, wanted)
+    return { text: wanted ? t.on : t.off }
+  })
+
+  // Az eszköztár gombja parancs nélkül kapcsol (így nem marad parancssor a transcriptben).
+  on('state.set', { plugin: 'tool-hub', key: 'request' }, async ($, e, next) => {
+    const done = await next(e)
+    if (e.value?.tool === 'limits') await setOn($, e.value.on)
+    return done
   })
 
   on('classic.PostModelSwitch', async ($, e, next) => {

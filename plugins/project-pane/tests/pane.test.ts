@@ -41,6 +41,7 @@ function engine(on: On, fixture: Fixture, waitReason?: string) {
   const prompts: string[] = []
   const toasts: string[] = []
   mock.env(on, { LANG: 'hu_HU.UTF-8' })
+  mock.store(on)
   mock.clock(on, { now: NOW })
   on('session.start', ($, e) => e as never)
   on('session.cwd', () => ({ value: ROOT }))
@@ -167,4 +168,17 @@ test('keskeny terminál: szól, hogy a panel vár', HU, async ($, on) => {
   await $.session.start({ cwd: ROOT, surface: 'terminal', isInteractive: true } as never)
   for (let i = 0; i < 20 && toasts.length === 0; i++) await Promise.resolve()
   expect(toasts.some(x => x.includes('120 oszlop < 144') && x.includes('/project'))).toBe(true)
+})
+
+test('/project ki: bezárja a panelt és nem frissít; /project be: újra nyitja', HU, async ($, on) => {
+  const s = engine(on, STALE)
+  const closed: string[] = []
+  on('ui.close', ($, e) => { closed.push(e.id); return { value: undefined } as never })
+  await start($)
+  expect((await $.command.run({ command: 'project', args: 'ki' } as never)).text).toContain('kikapcsolva')
+  expect(closed).toEqual(['project'])
+  const before = s.ran.length
+  await $.command.run({ command: 'project', args: 'valami' } as never)
+  expect(s.ran.length).toBe(before)
+  expect((await $.command.run({ command: 'project', args: 'be' } as never)).text).toBe('Projekt-panel megnyitva.')
 })

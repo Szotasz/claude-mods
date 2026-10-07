@@ -1,6 +1,6 @@
 {
   "name": "usage-band",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Status line: model, context window, 5-hour and weekly limits with reset times, warning past 90%. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {

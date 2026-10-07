@@ -13,6 +13,8 @@ const FETCH_MS = 5 * 60_000
 
 const snap = atom({ plugin: 'project-pane', key: 'snap' } as const, null)
 const busy = atom({ plugin: 'project-pane', key: 'busy' } as const, null)
+// Kikapcsolva nincs panel és nincs háttérfrissítés; az eszköztár (tool-hub) is ezt olvassa.
+const isOn = atom({ plugin: 'project-pane', key: 'isOn' } as const, true)
 
 // A modul minden beállításváltáskor és szerkesztéskor újratöltődik: ezek onnan indulnak újra.
 let t: Strings = STRINGS.en
@@ -152,7 +154,7 @@ async function runSync($: EngineInterface, dir: string, plan: SyncPlan, stash: b
 }
 
 async function refresh($: EngineInterface, withFetch = false): Promise<void> {
-  if (root === undefined || isRefreshing) return
+  if (root === undefined || isRefreshing || !(await read($, isOn))) return
   isRefreshing = true
   try {
     if (withFetch && (await run($, ['git', 'fetch', '--quiet', 'origin'], root, 60_000)).ok) lastFetch = await $.clock.now()
@@ -199,6 +201,21 @@ async function sync($: EngineInterface, stash: boolean): Promise<void> {
   }
 }
 
+// Be/ki kapcsolás: a /project parancs és az eszköztár (tool-hub) gombja is ezt hívja.
+async function setOn($: EngineInterface, wanted: boolean): Promise<string> {
+  await update($, isOn, () => wanted)
+  await $.store.set('isOn', wanted)
+  if (!wanted) {
+    await $.ui.close({ id: PANE })
+    return t.closed
+  }
+  root ??= await repoRoot($)
+  if (root === undefined) return t.notRepo
+  await $.ui.open({ id: PANE, title: t.title(root.split('/').at(-1) ?? '') })
+  background(refresh($, true))
+  return t.opened
+}
+
 export const register: Register = (on, options) => {
   if (options.language === 'hu' || options.language === 'en') t = STRINGS[options.language]
 
@@ -208,10 +225,17 @@ export const register: Register = (on, options) => {
     startedAt = await $.clock.now()
     root = await repoRoot($)
 
-    await $.command.register({ name: 'project', description: t.commandDescription })
+    const saved = (await $.store.get('isOn')) !== false
+    await update($, isOn, () => saved)
+    await $.command.register({
+      name: 'project',
+      description: t.commandDescription,
+      argumentHint: t === STRINGS.hu ? '[be|ki]' : '[on|off]',
+      immediate: true,
+    })
     if (root === undefined) return started
 
-    if (options.autoOpen !== false) {
+    if (saved && options.autoOpen !== false) {
       const title = t.title(root.split('/').at(-1) ?? '')
       // Keskeny terminálon a magától nyíló panel rejtve vár: szólunk, hogy ne tűnjön el nyomtalanul.
       background($.ui.open({ id: PANE, title }).then(opened => {
@@ -225,12 +249,17 @@ export const register: Register = (on, options) => {
     return started
   })
 
-  on('command.run', { command: 'project' }, async $ => {
-    root ??= await repoRoot($)
-    if (root === undefined) return { text: t.notRepo }
-    await $.ui.open({ id: PANE, title: t.title(root.split('/').at(-1) ?? '') })
-    background(refresh($, true))
-    return { text: t.opened }
+  on('command.run', { command: 'project' }, async ($, e) => {
+    const arg = e.args.trim().toLowerCase()
+    if (arg !== '' && !['be', 'on', 'ki', 'off'].includes(arg)) return { text: t.usage }
+    return { text: await setOn($, !['ki', 'off'].includes(arg)) }
+  })
+
+  // Az eszköztár gombja parancs nélkül kapcsol (így nem marad parancssor a transcriptben).
+  on('state.set', { plugin: 'tool-hub', key: 'request' }, async ($, e, next) => {
+    const done = await next(e)
+    if (e.value?.tool === 'project') await setOn($, e.value.on)
+    return done
   })
 
   // Claude futtathatott git/gh parancsot: a turn végén frissítünk (fetch nélkül, az olcsó).

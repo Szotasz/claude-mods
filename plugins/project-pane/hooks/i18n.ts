@@ -1,7 +1,9 @@
 const hu = {
   title: (name: string) => `Projekt: ${name}`,
-  commandDescription: 'Megnyitja és frissíti a projekt-panelt',
+  commandDescription: 'Projekt-panel be/ki (alapból megnyitja és frissíti)',
   opened: 'Projekt-panel megnyitva.',
+  closed: 'Projekt-panel kikapcsolva (/project be: újra be).',
+  usage: 'Használat: /project [be|ki]',
   waiting: (reason: string) => `A projekt-panel szélesebb terminálra vár (${reason}) — /project most megnyitja`,
   notRepo: 'Ez a mappa nem git repó, nincs mit mutatni.',
   loading: 'Betöltés…',
@@ -61,8 +63,10 @@ export type Strings = typeof hu
 
 const en: Strings = {
   title: name => `Project: ${name}`,
-  commandDescription: 'Open and refresh the project pane',
+  commandDescription: 'Project pane on/off (by default opens and refreshes it)',
   opened: 'Project pane opened.',
+  closed: 'Project pane off (/project on: back on).',
+  usage: 'Usage: /project [on|off]',
   waiting: reason => `The project pane waits for a wider terminal (${reason}) — /project opens it now`,
   notRepo: 'This folder is not a git repository; nothing to show.',
   loading: 'Loading…',

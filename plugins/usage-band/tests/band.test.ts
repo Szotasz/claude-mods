@@ -12,6 +12,8 @@ const HU = { options: { language: 'hu' } }
 function engine(on: On, modelName = 'Opus') {
   const status: (string | undefined)[] = []
   const toasts: string[] = []
+  mock.store(on)
+  on('command.register', ($, e) => ({ value: { command: e.name } }) as never)
   on('session.model', () => ({ value: modelName }))
   on('session.measure', ($, e) => ({ changed: e.changed }))
   on('ui.status', ($, e) => { status.push(e.text); return { value: undefined } })
@@ -86,4 +88,15 @@ test('a sávba már nem rajzol', HU, async ($, on) => {
   expect(await ui.find({ key: 'engine' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /%/ })).toBeUndefined()
   await ui.unmount()
+})
+
+test('/limitsav ki: üres státuszsor, be: újra kiírja', HU, async ($, on) => {
+  const s = engine(on)
+  await $.session.measure({ context: { tokens: 5000, window: 200_000, percent: 3 }, rateLimits: [], changed: ['context'] })
+  expect((await $.command.run({ command: 'limitsav', args: 'ki' } as never)).text).toBe('Limitsáv kikapcsolva.')
+  expect(s.last()).toBeUndefined()
+  await $.session.measure({ context: { tokens: 6000, window: 200_000, percent: 3 }, rateLimits: [], changed: ['context'] })
+  expect(s.last()).toBeUndefined()
+  await $.command.run({ command: 'limitsav', args: 'be' } as never)
+  expect(s.last()).toContain('Ctx')
 })
