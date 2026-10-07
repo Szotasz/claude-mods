@@ -125,18 +125,28 @@ const FOCUS_TEXT = {
   en: { title: 'Focus mode', done: 'done', waiting: 'subtasks will show up shortly…', idle: 'on · /fokusz off to turn it off' },
 }
 
-export function focusWidth(list: readonly Task[], columns: number, isWorking: boolean, l: Lang): number {
+// A rajzjelek (vonal, sáv, ikon) egy cellát foglalnak. Az asztali appban a betűk arányos betűtípussal,
+// keskenyebben jelennek meg, így ott egy betű csak ~0,55 vonaldarabnyi helyet foglal.
+const GRAPHIC = /[─█░▒▓◆▸○✓■]/
+export function measure(text: string, narrow: boolean): number {
+  if (!narrow) return text.length
+  let units = 0
+  for (const ch of text) units += GRAPHIC.test(ch) ? 1 : 0.55
+  return Math.ceil(units)
+}
+
+export function focusWidth(list: readonly Task[], columns: number, isWorking: boolean, l: Lang, narrow = false): number {
   const f = FOCUS_TEXT[l]
-  if (list.length === 0) return 2 + f.title.length + 1 + (isWorking ? f.waiting : f.idle).length
+  if (list.length === 0) return measure(`◆ ${f.title} ${isWorking ? f.waiting : f.idle}`, narrow)
   const done = list.filter(task => task.status === 'done').length
   const total = Math.round(list.reduce((sum, task) => sum + task.progress, 0) / list.length)
-  const header = `◆ ${f.title}  ${done}/${list.length} ${f.done}  `.length + 12 + ` ${total}%`.length
+  const header = `◆ ${f.title}  ${done}/${list.length} ${f.done}  ${'█'.repeat(12)} ${total}%`
   const titleRoom = Math.max(10, columns - 24)
   const rows = list.map(task => {
-    const name = Math.min(task.title.length, titleRoom)
-    return task.status === 'in_progress' ? 4 + name + 1 + 8 + ` ${task.progress}%`.length : 4 + name
+    const name = task.title.slice(0, titleRoom)
+    return task.status === 'in_progress' ? `  ▸ ${name} ${'█'.repeat(8)} ${task.progress}%` : `  ✓ ${name}`
   })
-  return Math.max(header, ...rows)
+  return Math.max(...[header, ...rows].map(row => measure(row, narrow)))
 }
 
 async function refresh($: EngineInterface): Promise<void> {
@@ -260,8 +270,9 @@ export const register: Register = (on, options) => {
     // Ha a fókusz mód lista van fölötte, a vonal annak legszélesebb soráig tart, különben a kontextussorig.
     const focusOn = (await $.state.get(FOCUS_ON)).value === true
     const focusList = focusOn ? ((await $.state.get(FOCUS_TASKS)).value ?? []) : []
-    const ownWidth = b === null || b.segments.length === 0 ? LABEL + t().noData.length : LABEL + width + 16
-    const divider = Math.max(10, Math.min(columns - 1, focusOn ? focusWidth(focusList, columns, e.props.isWorking, lang) : ownWidth))
+    const narrow = e.surface !== 'terminal'
+    const ownWidth = b === null || b.segments.length === 0 ? measure(' '.repeat(LABEL) + t().noData, narrow) : LABEL + width + 16
+    const divider = Math.max(10, Math.min(columns - 1, focusOn ? focusWidth(focusList, columns, e.props.isWorking, lang, narrow) : ownWidth))
 
     // Vonal a sáv tetején: elválasztja a fölötte lévő modoktól (fókusz mód listája, eszköztár).
     return (

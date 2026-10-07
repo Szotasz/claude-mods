@@ -114,4 +114,8 @@ test('fókusz móddal a vonal a lista legszélesebb soráig tart', HU, async ($,
   // fejléc: "◆ Fókusz mód  1/2 kész  " (24) + 12 + " 70%" (4) = 40; a futó sor: 4 + 25 + 1 + 8 + 4 = 42
   expect(await ui.find({ type: 'Text', text: /^─{42}$/ })).toBeDefined()
   await ui.unmount()
+  // Asztali appban a betűk keskenyebbek: a futó sor 33 betű × 0,55 + 9 rajzjel ≈ 28
+  const desk = await mount($, 'desktop')
+  expect(await desk.find({ type: 'Text', text: /^─{28}$/ })).toBeDefined()
+  await desk.unmount()
 })
