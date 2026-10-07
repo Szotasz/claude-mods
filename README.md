@@ -8,6 +8,8 @@ Saját Claude Code mod-ok (function hook pluginek) egy pluginpiacon.
 claude plugin marketplace add Szotasz/claude-mods
 claude plugin install usage-band@claude-mods
 claude plugin install project-pane@claude-mods
+claude plugin install focus-mode@claude-mods
+claude plugin install tool-hub@claude-mods
 claude plugin install snake-pane@claude-mods
 ```
 
@@ -83,6 +85,44 @@ Adatforrások (a CLI-k saját bejelentkezésével, a plugin tokent nem olvas):
 | Supabase | `supabase/.temp/project-ref`, `supabase/migrations`, `supabase projects list` | `supabase login` az állapothoz |
 
 Beállítás (`/config`): `project-pane.language` (`auto`/`hu`/`en`), `project-pane.autoOpen` (alapból be).
+
+### focus-mode
+
+Fókusz mód: a transcriptből eltűnnek az eszközhívások és eredményeik, a köztes szövegek, a saját promptjaid és a parancsok kimenete. Csak két dolog marad: a prompt fölötti sávban a részfeladatok listája állapotsávval és pipával, alatta a turn végső válasza.
+
+```
+✔ Meglévő mod-repo áttekintése
+◐ Játék-mod megírása  ██████░░░░ 60%
+○ Felvétel az eszközök közé
+```
+
+- `/fokusz` kapcsolja, `/fokusz be` / `/fokusz ki` beállítja; az állapotot sessionök között megőrzi.
+- A listát a modell tölti a mod által regisztrált `mcp__focus-mode__plan` eszközzel; a rendszerprompt bekapcsolt állapotban erre utasítja (minden több lépéses kérésnél előbb a részfeladatok, aztán frissítés indításkor, haladáskor és befejezéskor).
+- Kikapcsolva minden a megszokott módon látszik.
+
+Beállítás (`/config`): `focus-mode.language` (`auto`/`hu`/`en`).
+
+### tool-hub
+
+Eszköztár: egy helyről kapcsolhatók a fenti modok. A prompt alatti lábléc jobb oldalán lévő **⚙ Eszközök** gomb (vagy `/eszkozok`) a prompt fölötti sávban nyitja meg:
+
+```
+⚙ Szabolcs eszközei  kattintás, vagy ctrl+x tab után szám  [ Bezár ]
+1. Fókusz mód   ● BE  [ Kikapcsol ] · Csak a részfeladatok listája és a végső válasz látszik
+2. Limitsáv     ○ KI  [ Bekapcsol ] · Alsó sáv: 5 órás és heti limit, kontextusablak
+3. Projektpanel ● BE  [ Kikapcsol ] · GitHub, CI, Netlify és Supabase állapot oldalt
+4. Kígyó játék  ● BE  [ Kikapcsol ] · Oldalt nyílik promptküldéskor, amíg Claude dolgozik
+```
+
+- Modonként BE/KI állapot és kapcsoló gomb, `ctrl+x tab` után az `1`–`4` számbillentyűvel is.
+- Ami nincs telepítve, „nincs betöltve” felirattal jelenik meg.
+- Bekapcsolt fókusz módnál a lábléc is kiírja: „Fókusz mód”.
+- Parancsból is ugyanez: `/fokusz`, `/limitsav`, `/project`, `/jatek` (mind `be|ki` argumentummal).
+- A sávot megosztja a fókusz mód listájával (a kapcsolók alatta jelennek meg).
+
+Új mod felvétele az eszköztárba: a mod írja a saját `isOn` állapotát, adjon `/<parancs> be|ki`-t, és hookolja a `state.set`-et `{ plugin: 'tool-hub', key: 'request' }`-re; a hubban egy sor a `TOOLS` listába, egy ág a `stateOf`-ba és a kulcs a `types/index.d.ts`-be.
+
+Beállítás (`/config`): `tool-hub.language` (`auto`/`hu`/`en`).
 
 ### snake-pane
 
