@@ -1,0 +1,24 @@
+{
+  "name": "focus-mode",
+  "version": "0.3.0",
+  "description": "Focus mode: hides tool calls, intermediate text, your prompts and command output; shows only a subtask list with progress bars and the final answer. /fokusz toggles. Hungarian or English.",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Szota Szabolcs",
+    "email": "szota.szabolcs@gmail.com"
+  },
+  "userConfig": {
+    "language": {
+      "type": "string",
+      "title": "Language / Nyelv",
+      "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
+      "required": false,
+      "default": "auto",
+      "options": [
+        "auto",
+        "hu",
+        "en"
+      ]
+    }
+  }
+}
