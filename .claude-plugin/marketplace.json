@@ -53,8 +53,8 @@
     },
     {
       "name": "tool-hub",
-      "version": "0.5.0",
-      "description": "Eszköztár: a prompt alatti lábléc jobb oldalán egy ⚙ gomb (vagy /eszkozok) a prompt fölötti sávban nyit kapcsolókat a modokhoz: fókusz mód, limitsáv, használati sáv, projektpanel, kígyó játék. Magyar/angol.",
+      "version": "0.6.0",
+      "description": "Eszköztár: a prompt alatti lábléc jobb oldalán egy ⚙ gomb (vagy /eszkozok) a prompt fölötti sávban nyit kapcsolókat a modokhoz: fókusz mód, limitsáv, használati sáv, projektpanel, kígyó játék, Supabase-őr, Push-őr, döntési felugró. Magyar/angol.",
       "author": {
         "name": "Szota Szabolcs",
         "email": "szota.szabolcs@gmail.com"
@@ -71,6 +71,39 @@
         "email": "szota.szabolcs@gmail.com"
       },
       "source": "./plugins/snake-pane",
+      "category": "productivity"
+    },
+    {
+      "name": "supabase-guard",
+      "version": "0.1.0",
+      "description": "Supabase-őr: megállítja a nem az aktuális mappa projektjére menő Supabase-hívásokat (MCP és CLI), romboló SQL, branch-reset és projekt-szüneteltetés előtt egygombos felugróban rákérdez; más projekt olvasásakor figyelmezteti a modellt. /supaor be|ki. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/supabase-guard",
+      "category": "productivity"
+    },
+    {
+      "name": "public-repo-guard",
+      "version": "0.1.0",
+      "description": "Push-őr: nyilvános GitHub-repóba push (vagy nyilvánossá tétel) előtt átnézi, mi menne ki: Supabase projekt-ID, kulcsok, tokenek, e-mailek, helyi útvonalak, privát repónevek, .env fájlok; találat esetén egygombos felugróban kérdez. /pushor be|ki|figyel <szöveg>. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/public-repo-guard",
+      "category": "productivity"
+    },
+    {
+      "name": "decision-popup",
+      "version": "0.1.0",
+      "description": "Döntési felugró: Claude minden döntést (engedélyezés, A vagy B, visszafordíthatatlan lépés) egygombos kérdésként tesz fel, keretes felugróban; az őr-modok kérdése piros keretet kap. /dontes be|ki. Magyar/angol.",
+      "author": {
+        "name": "Szota Szabolcs",
+        "email": "szota.szabolcs@gmail.com"
+      },
+      "source": "./plugins/decision-popup",
       "category": "productivity"
     }
   ]

@@ -1,7 +1,7 @@
 {
-  "name": "tool-hub",
-  "version": "0.6.0",
-  "description": "Toolbox: a button at the bottom right of the prompt footer (or /eszkozok) opens switches above the prompt for Szabolcs's mods (focus mode, usage bar, project pane, snake game, Supabase guard, push guard, decision popup, ...). Hungarian or English.",
+  "name": "public-repo-guard",
+  "version": "0.1.0",
+  "description": "Push guard: before a git push to a public GitHub repo (or making one public) it scans what would go out for Supabase project IDs, keys, tokens, emails, local paths, private repo names and .env files, and asks in a one-key popup. /pushor toggles. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "Szota Szabolcs",
@@ -14,11 +14,7 @@
       "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
       "required": false,
       "default": "auto",
-      "options": [
-        "auto",
-        "hu",
-        "en"
-      ]
+      "options": ["auto", "hu", "en"]
     }
   }
 }

@@ -12,6 +12,9 @@ claude plugin install project-pane@claude-mods
 claude plugin install focus-mode@claude-mods
 claude plugin install tool-hub@claude-mods
 claude plugin install snake-pane@claude-mods
+claude plugin install supabase-guard@claude-mods
+claude plugin install public-repo-guard@claude-mods
+claude plugin install decision-popup@claude-mods
 ```
 
 Frissítés: `claude plugin update usage-band@claude-mods`, majd `/reload-plugins` (vagy új session).
@@ -166,6 +169,34 @@ w: ↑ a: ← s: ↓ d: → p: szünet r: új
 - A pontszámmal gyorsul; a rekordot sessionök között megőrzi.
 - A játék a rajzoló szálon fut (`Client` surface modul), nem terheli a sessiont.
 
+### supabase-guard
+
+Supabase-őr: megállítja a Supabase-hívást, ha nem az aktuális mappa projektjére menne, és egygombos felugróban rákérdez.
+
+- A mappa projektjét a `supabase/.temp/project-ref`, a `.env*` fájlok `https://<ref>.supabase.co` címei és a `CLAUDE.md` (ha egyetlen projekt-ID-t említ) adják, plusz amit a felugróban „Ez a mappa projektje” gombbal megerősítettél.
+- Más projektre menő írás (MCP `execute_sql`, `apply_migration`, `deploy_edge_function`, branch-műveletek, illetve `supabase db push --project-ref …`): kérdez — **Megtiltom / Engedélyezem / Ez a mappa projektje**.
+- Romboló művelet a saját projekten is kérdez: `DROP`, `TRUNCATE`, `DELETE FROM`, `WHERE` nélküli `UPDATE`, `REVOKE`, RLS kikapcsolása, `reset_branch`, `delete_branch`, `pause_project`, `supabase db reset --linked`.
+- Ha a mappához nem talál projektet, írás előtt kérdez (van „Engedem a session végéig” gomb is).
+- Más projekt **olvasása** fut, de a modell kap egy figyelmeztetést, hogy ne a rossz projektről vonjon le következtetést.
+- Hiba esetén zárva marad: ha az ellenőrzés elhasal, a Supabase-hívás nem fut le. `/supaor be|ki`, vagy az eszköztárban.
+
+### public-repo-guard
+
+Push-őr: nyilvános GitHub-repóba push előtt (és `gh repo edit --visibility public` / `gh repo create --public` előtt) átnézi, mi menne ki.
+
+- A távoli ágon még nem lévő commitokat nézi (üzenet + hozzáadott sorok, a history is); ha nincs mihez mérni, az egész fát. Kezeli a `git push origin forrás:cél` alakot is.
+- Keres: Supabase projekt-ID (URL, `project_id`, táblázatsor), JWT / Supabase-kulcs, Stripe/Anthropic/OpenAI/GitHub/AWS/Google/Slack/Resend/Telegram/ElevenLabs kulcsok, privát kulcs, e-mail-cím (a saját git e-mail és a noreply/példa címek kivételével), helyi `/Users/<te>/` útvonal, privát repóid nevei (`gh repo list --visibility private`), `.env` fájlok, és amit `/pushor figyel <szöveg>`-gel felvettél.
+- Találatnál felugró, maszkolt listával — **Megtiltom / Pushold így is / Pushold, jegyezd meg** (az utóbbi kivételként megjegyzi a találatokat). Tiltáskor a modell megkapja a teljes listát a javításhoz.
+- Privát repóba menő pushnál nem csinál semmit. Kell hozzá a `gh` CLI (bejelentkezve). `/pushor be|ki`.
+
+### decision-popup
+
+Döntési felugró: a döntések egygombos kérdésként jönnek.
+
+- A rendszerpromptban arra kéri Claude-ot, hogy minden döntést (engedélyezés, A vagy B, visszafordíthatatlan vagy kifelé ható lépés) az AskUserQuestion dialógussal kérdezzen meg, 2–4 rövid opcióval, a javasoltat vagy a biztonságosabbat elöl — egy számgombbal válaszolsz.
+- A dialógus keretet és címet kap („Döntés kell”); az őr-modok (supabase-guard, public-repo-guard) kérdése piros keretben, „Az őr megállított egy műveletet” címmel.
+- `/dontes be|ki`, vagy az eszköztárban.
+
 ## Ötletek
 
 project-pane bővítése:
@@ -181,7 +212,6 @@ Státuszsor bővítése (`usage-band`):
 
 Új mod-ok:
 - **env-guard**: `.env`, kulcsfájlok, `supabase/.temp` szerkesztésének tiltása (`tool.call` → `deny`)
-- **prod-guard**: éles Supabase projekt ID-jára vagy `git push origin main`-re megerősítés kérése
 - **turn-timer**: hosszú turn végén hang/toast, hogy vissza lehet nézni (`turn.complete`, `$.audio.play`)
 - **quote**: `/quote` — a kijelölt szöveget idézetként a promptba teszi (`$.ui.selection`)
 - **hu-prompt**: a rendszerpromptba magyar válasz- és stílusszabály (`prompt.compose`)

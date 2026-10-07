@@ -57,6 +57,33 @@ const TOOLS = [
       en: 'Opens at the side when you send a prompt, while Claude works',
     },
   },
+  {
+    id: 'supabase',
+    command: 'supaor',
+    label: { hu: 'Supabase-őr', en: 'Supabase guard' },
+    detail: {
+      hu: 'Rossz projektre menő és romboló Supabase-hívás előtt rákérdez',
+      en: 'Asks before Supabase calls to the wrong project or destructive ones',
+    },
+  },
+  {
+    id: 'pushguard',
+    command: 'pushor',
+    label: { hu: 'Push-őr', en: 'Push guard' },
+    detail: {
+      hu: 'Nyilvános repóba push előtt titkokat, ID-ket, e-maileket keres',
+      en: 'Looks for secrets, IDs and emails before pushing to a public repo',
+    },
+  },
+  {
+    id: 'decision',
+    command: 'dontes',
+    label: { hu: 'Döntési felugró', en: 'Decision popup' },
+    detail: {
+      hu: 'A döntések egygombos kérdésként jönnek, keretben',
+      en: 'Decisions come as one-key questions in a frame',
+    },
+  },
 ] as const
 
 type Tool = (typeof TOOLS)[number]
@@ -107,6 +134,9 @@ const LIMITS = { plugin: 'usage-band', key: 'isOn' } as const
 const HEADER = { plugin: 'usage-header', key: 'isOn' } as const
 const PROJECT = { plugin: 'project-pane', key: 'isOn' } as const
 const GAME = { plugin: 'snake-pane', key: 'isOn' } as const
+const SUPABASE = { plugin: 'supabase-guard', key: 'isOn' } as const
+const PUSHGUARD = { plugin: 'public-repo-guard', key: 'isOn' } as const
+const DECISION = { plugin: 'decision-popup', key: 'isOn' } as const
 
 // undefined: a mod nincs betöltve (még sosem írta az állapotát).
 async function stateOf($: EngineInterface, tool: Tool): Promise<boolean | undefined> {
@@ -121,6 +151,12 @@ async function stateOf($: EngineInterface, tool: Tool): Promise<boolean | undefi
       return (await $.state.get(PROJECT)).value
     case 'game':
       return (await $.state.get(GAME)).value
+    case 'supabase':
+      return (await $.state.get(SUPABASE)).value
+    case 'pushguard':
+      return (await $.state.get(PUSHGUARD)).value
+    case 'decision':
+      return (await $.state.get(DECISION)).value
   }
 }
 

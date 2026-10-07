@@ -10,5 +10,8 @@ declare module 'claude-code' {
     'usage-header': { isOn: boolean }
     'project-pane': { isOn: boolean }
     'snake-pane': { isOn: boolean }
+    'supabase-guard': { isOn: boolean }
+    'public-repo-guard': { isOn: boolean }
+    'decision-popup': { isOn: boolean }
   }
 }

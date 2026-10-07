@@ -1,7 +1,7 @@
 {
-  "name": "tool-hub",
-  "version": "0.6.0",
-  "description": "Toolbox: a button at the bottom right of the prompt footer (or /eszkozok) opens switches above the prompt for Szabolcs's mods (focus mode, usage bar, project pane, snake game, Supabase guard, push guard, decision popup, ...). Hungarian or English.",
+  "name": "decision-popup",
+  "version": "0.1.0",
+  "description": "Decision popup: Claude asks every decision (approve/refuse, A or B, irreversible steps) as a one-key question, drawn in a framed popup; guard mods' questions get a red frame. /dontes toggles. Hungarian or English.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "Szota Szabolcs",
@@ -14,11 +14,7 @@
       "description": "\"auto\" (default): Hungarian when the system locale (LANG) is Hungarian, English otherwise. \"hu\": magyar. \"en\": English.",
       "required": false,
       "default": "auto",
-      "options": [
-        "auto",
-        "hu",
-        "en"
-      ]
+      "options": ["auto", "hu", "en"]
     }
   }
 }
